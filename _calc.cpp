@@ -11,7 +11,7 @@ int precedence(char c)
 	else return 0;
 }
 
-bool isoperator(char c)
+inline bool isoperator(char c)
 {
 	return 
 		c == '+' || 
@@ -40,12 +40,16 @@ std::string toPostfix(std::string &exp)
 			postfix += ' ';
 			while (!stack.empty() && precedence(stack.top()) >= precedence(c)) 
 			{
-
 				postfix += stack.top();
 				postfix += ' ';
 				stack.pop();
 			}
 			stack.push(c);
+		}
+		else
+		{
+			std::cerr << "Invalid Argument\n";
+			return "error";
 		}
 	}
 	
@@ -79,40 +83,86 @@ float calc(float n1, float n2, char op)
 
 float eval(std::string &exp)
 {
-	std::stringstream ss(toPostfix(exp));
-	std::string token = "";
-	std::stack<float> stack;
-	while (ss >> token)
+	std::string postfixed = toPostfix(exp);
+	if (postfixed != "Error")
 	{
-		if (std::isdigit(token[0]))
-			stack.push(std::stof(token));
-		else if (isoperator(token[0]))
+		std::stringstream ss(postfixed);
+		std::string token = "";
+		std::stack<float> stack;
+		while (ss >> token)
 		{
-			float num2 = stack.top();
-			stack.pop();
-			float num1 = stack.top();
-			stack.pop();
-			stack.push(calc(num1, num2, token[0]));
+			if (std::isdigit(token[0]))
+				stack.push(std::stof(token));
+			else if (isoperator(token[0]))
+			{
+				float num2 = stack.top();
+				stack.pop();
+				float num1 = stack.top();
+				stack.pop();
+				stack.push(calc(num1, num2, token[0]));
+			}
 		}
+		return stack.top();
 	}
-	return stack.top();
+	else
+	{
+		std::cout << "Invalid Argument\n";
+		return 0;
+	}
 }
+
+long long factorial(int n)
+{
+	if (n == 0 || n == 1) return 1;
+	else return n * factorial(n - 1);
+}
+
 
 int main(int argc, char* argv[])
 {
-	if (argc < 3) 
+
+
+	if (argc < 2)
 	{
-		std::cerr << "Usage: " << "-<mode> <expression>" << std::endl;
-		return 1;
+		std::cerr << "Usage: " << "-<mode> <expression>\n\nType [_calc -h] or [_calc -help]" << "\n";
+		return -1;
 	}
 
-	std::string mode = argv[1];
-	std::string expression = argv[2];
-
-	if (mode == "-e")
+	if (argv[1] == "-h")
 	{
+		std::cout << "";
+	}
+	else if (argv[1] == "-fac")
+	{
+		if (argc < 3)
+		{
+			std::cerr << "Invalid Argument" << "\n";
+			return -1;
+		}
+		else
+		{
+			std::string number = argv[2];
+			int num = std::stoi(number);
+			if (num < 0)
+			{
+				std::cerr << "Invalid Argument\n";
+				return -1;
+			}
+			else
+			{
+				long long res = factorial(num);
+				std::cout << "Result: " << res << "\n";
+			}
+		}
+	}
+	else if (argv[1] == "-e")
+	{
+		std::string expression = argv[2];
 		float res = eval(expression);
-		std::cout << "Result: " << res << "\n";
+		if (res == static_cast<int>(res))
+			std::cout << "Result: " << static_cast<int>(res) << "\n";
+		else
+			std::cout << "Result: " << res << "\n";
 	}
 
 	return 0;
